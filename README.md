@@ -31,8 +31,8 @@ It helps an agent handle:
 
 - web pages
 - WeChat public articles
-- YouTube videos
 - X / Twitter posts and threads
+- YouTube videos
 - PDF / DOCX / PPTX / XLSX / EPUB
 - Markdown / text files
 - images with OCR
@@ -44,8 +44,8 @@ It helps an agent handle:
 
 - 網頁
 - 微信公眾號文章
-- YouTube 影片
 - X / Twitter 貼文與串文
+- YouTube 影片
 - PDF / DOCX / PPTX / XLSX / EPUB
 - Markdown / 純文字
 - 圖片 OCR
