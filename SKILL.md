@@ -2,7 +2,7 @@
 name: anything-to-notebooklm-multitool-zh-tw
 description: 將網頁、微信文章、YouTube、PDF、Office、Markdown、圖片、音訊與搜尋結果整理後匯入 NotebookLM，並依需求產出 Podcast、簡報、心智圖、測驗、報告等成果。此版本針對 Codex、Gemini CLI、OpenCode CLI、Antigravity 等多種代理式開發工具重新設計。
 user-invocable: true
-homepage: https://github.com/joeseesun/anything-to-notebooklm
+homepage: https://github.com/tbdavid2019/anything-to-notebooklm
 version: 2.0.0
 language: zh-TW
 ---
