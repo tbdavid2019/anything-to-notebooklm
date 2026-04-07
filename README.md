@@ -1,8 +1,110 @@
 # anything-to-notebooklm
 
-A multi-tool NotebookLM skill for Codex, Gemini CLI, OpenCode CLI, Antigravity, and similar agentic developer tools.
+A runnable NotebookLM skill/runtime for Codex, Gemini CLI, OpenCode CLI, Antigravity, and similar agentic developer tools.
 
-這是一份可跨工具使用的 NotebookLM skill，針對 Codex、Gemini CLI、OpenCode CLI、Antigravity 等代理式開發工具重新整理，目的是把多來源內容整理後匯入 NotebookLM，並依需求產出 Podcast、簡報、心智圖、測驗、報告等成果。
+這是一份可跨工具使用、而且已補齊本機 runtime 的 NotebookLM skill，針對 Codex、Gemini CLI、OpenCode CLI、Antigravity 等代理式開發工具重新整理，目的是把多來源內容整理後匯入 NotebookLM，並依需求產出 Podcast、簡報、心智圖、測驗、報告等成果。
+
+## Status / 狀態
+
+This repo is no longer just a rewritten prompt spec. It now includes the local runtime bootstrap needed for real execution.
+
+這個 repo 現在已整理成可在本機實際執行的 runtime，不再只是改寫後的 prompt 規格。
+
+Verified locally on 2026-04-07:
+
+- `./install.sh` completed successfully with a local `.venv`
+- Playwright Chromium installed successfully
+- `notebooklm login` completed successfully
+- `notebooklm list` returned real notebook data
+- YouTube source ingestion was tested successfully with `https://www.youtube.com/watch?v=Wye0r7uCh5s`
+
+本機已驗證項目：
+
+- `./install.sh` 可正常完成，並使用 repo 內 `.venv`
+- Playwright Chromium 已安裝成功
+- `notebooklm login` 已可正常登入
+- `notebooklm list` 已可讀到真實 notebook 清單
+- YouTube 來源已實測成功，可匯入 `https://www.youtube.com/watch?v=Wye0r7uCh5s`
+
+## Quick Start / 快速開始
+
+```bash
+cd /Users/david/Documents/git/tbdavid2019/anything-to-notebooklm
+./install.sh
+/Users/david/Documents/git/tbdavid2019/anything-to-notebooklm/.venv/bin/notebooklm login
+./check_env.py
+```
+
+For command-line use, prepend the local virtualenv to `PATH`:
+
+```bash
+export PATH="/Users/david/Documents/git/tbdavid2019/anything-to-notebooklm/.venv/bin:$PATH"
+```
+
+Then you can run:
+
+```bash
+notebooklm list
+notebooklm create "demo"
+notebooklm source add "https://www.youtube.com/watch?v=Wye0r7uCh5s"
+```
+
+## What Works / 目前可用
+
+- NotebookLM login and notebook listing
+- YouTube source ingestion through `notebooklm source add`
+- Local runtime installation through `./install.sh`
+- Local environment verification through `./check_env.py`
+- WeChat support via `wexin-read-mcp` after MCP wiring
+
+- NotebookLM 登入與 notebook 清單讀取
+- 透過 `notebooklm source add` 匯入 YouTube
+- 透過 `./install.sh` 完成本機 runtime 安裝
+- 透過 `./check_env.py` 檢查本機環境
+- 接好 MCP 後可支援微信公眾號
+
+## Required Runtime / 必裝前置
+
+This repo should be treated as runtime-first. Python and Playwright are not optional if you want real ingestion instead of documentation-only behavior.
+
+這個 repo 應視為 runtime-first。若你要真正可用的匯入流程，而不是只看文件，Python 與 Playwright 都不是可選項。
+
+- Python 3.9+
+- local virtualenv created by `./install.sh`
+- Playwright + Chromium
+- `notebooklm` CLI
+- NotebookLM login session
+
+## Diagrams / 說明圖
+
+### Runtime Flow
+
+```mermaid
+flowchart LR
+    A[User input] --> B[SKILL.md decision rules]
+    B --> C{Source type}
+    C -->|WeChat| D[wexin-read-mcp]
+    C -->|YouTube / URL| E[NotebookLM source add]
+    C -->|PDF / DOCX / PPTX / Image / Audio| F[markitdown]
+    F --> G[normalized text / markdown]
+    D --> G
+    E --> H[NotebookLM notebook]
+    G --> H
+    H --> I[report / quiz / mind-map / audio / slide-deck]
+```
+
+### Installation Flow
+
+```mermaid
+flowchart TD
+    A[./install.sh] --> B[create .venv]
+    B --> C[clone wexin-read-mcp]
+    C --> D[install Python dependencies]
+    D --> E[playwright install chromium]
+    E --> F[install notebooklm CLI]
+    F --> G[notebooklm login]
+    G --> H[./check_env.py]
+```
 
 ## Overview / 簡介
 
@@ -78,20 +180,20 @@ The rewritten skill focuses on a stable execution flow:
 This repository now includes support guidance for `x.com` and `twitter.com` sources.
 For public posts and threads, the preferred strategy is:
 
-1. use direct extraction when available
-2. fall back to a working `Nitter` instance for public content
+1. if there is no authenticated API, login session, or proven stable official parser, try a working `Nitter` instance first
+2. use direct extraction from `x.com` / `twitter.com` only when the agent has already confirmed it is reliable in the current environment
 3. if both fail, ask the user for pasted text, screenshots, or an exported thread
 
 目前這個版本已加入 `x.com` 與 `twitter.com` 來源支援。
 對公開貼文與串文，建議流程是：
 
-1. 優先直接讀取公開內容
-2. 若失敗，改用可用的 `Nitter` instance 當 fallback
+1. 若沒有登入態、官方 API 或已驗證穩定可用的官方解析能力，先試可用的 `Nitter` instance
+2. 只有在代理已確認 `x.com` / `twitter.com` 可穩定讀取時，才直接抓官方頁面
 3. 若仍失敗，要求使用者提供貼文文字、截圖或 thread 匯出
 
-Because `Nitter` is not an official interface and instance stability varies, the skill treats it as a fallback rather than a guaranteed primary source.
+Because `Nitter` is not an official interface and instance stability varies, the skill treats it as the preferred public-web fallback path when official extraction is not already proven reliable in the current environment.
 
-由於 `Nitter` 並非官方介面，而且各 instance 穩定性不一，因此 skill 將它視為 fallback，而不是保證可用的主要來源。
+由於 `Nitter` 並非官方介面，而且各 instance 穩定性不一，因此當前 skill 將它定位為「公開網頁場景下的優先 fallback 路徑」；只有在官方頁面已被驗證可穩定讀取時，才直接抓官方頁面。
 
 ## Why This Rewrite / 為什麼要重寫
 
@@ -138,6 +240,74 @@ If not, use the normalization steps first and hand off the generated Markdown/TX
 你可以直接把 `SKILL.md` 納入自己的代理系統、CLI 工作流或 prompt framework。
 若當前環境能直接操作 NotebookLM，可完整執行整套流程。
 若無法直接操作，也可以先用 skill 完成內容整理，再手動上傳整理好的 Markdown / TXT 檔案。
+
+## Practical Setup / 實戰安裝
+
+This rewritten repo is not just a text spec anymore. It includes the runtime bootstrap files needed to match the upstream executable workflow more closely.
+
+這個改寫 repo 現在不再只是文字規格，也補進了接近 upstream 實戰流程所需的啟動檔。
+
+Recommended setup:
+
+```bash
+./install.sh
+notebooklm login
+./check_env.py
+```
+
+What `./install.sh` does:
+
+- clones `wexin-read-mcp` for WeChat article extraction
+- installs Python runtime dependencies from `requirements.txt`
+- installs Playwright and runs `playwright install chromium`
+- installs `notebooklm` CLI
+- installs everything into a local `.venv` instead of polluting system Python
+
+`./install.sh` 會做的事：
+
+- clone `wexin-read-mcp` 來處理微信公眾號文章
+- 安裝 `requirements.txt` 內的 Python 依賴
+- 安裝 Playwright，並執行 `playwright install chromium`
+- 安裝 `notebooklm` CLI
+- 所有 Python 套件都會安裝到 repo 內的 `.venv`
+
+## Tested Example / 已實測範例
+
+The following command sequence has been tested successfully in this repo:
+
+```bash
+export PATH="/Users/david/Documents/git/tbdavid2019/anything-to-notebooklm/.venv/bin:$PATH"
+notebooklm create "yt-test-Wye0r7uCh5s"
+notebooklm source add "https://www.youtube.com/watch?v=Wye0r7uCh5s" -n <NOTEBOOK_ID>
+notebooklm source wait <SOURCE_ID> -n <NOTEBOOK_ID> --timeout 300
+notebooklm source guide <SOURCE_ID> -n <NOTEBOOK_ID>
+```
+
+Result:
+
+- Notebook creation succeeded
+- YouTube source ingestion succeeded
+- NotebookLM returned a source summary and keywords
+
+結果：
+
+- 建立 notebook 成功
+- YouTube 來源匯入成功
+- NotebookLM 已回傳來源摘要與關鍵詞
+
+## Runtime Expectations / 執行預期
+
+Fallback still exists, but only for narrow cases such as local files, pasted text, and a few static pages. Real-world coverage depends on the installed runtime.
+
+降級流程仍然存在，但只適用於本機檔案、貼上的文字與少數靜態頁面。真實世界的來源覆蓋率仍取決於 runtime 是否安裝完成。
+
+- Without runtime: treat this repo as partially usable only
+- With runtime: YouTube, NotebookLM automation, and dynamic-source workflows become realistic
+- WeChat still requires MCP wiring in the host tool
+
+- 沒有 runtime：只能算部分可用
+- 有 runtime：YouTube、NotebookLM 自動化、動態來源流程才會比較接近可實戰
+- 微信仍需要在宿主工具中接好 MCP
 
 ## Source / 來源
 

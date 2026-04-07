@@ -3,7 +3,7 @@ name: anything-to-notebooklm-multitool-zh-tw
 description: 將網頁、微信文章、YouTube、PDF、Office、Markdown、圖片、音訊與搜尋結果整理後匯入 NotebookLM，並依需求產出 Podcast、簡報、心智圖、測驗、報告等成果。此版本針對 Codex、Gemini CLI、OpenCode CLI、Antigravity 等多種代理式開發工具重新設計。
 user-invocable: true
 homepage: https://github.com/tbdavid2019/anything-to-notebooklm
-version: 2.0.0
+version: 2.1.0
 language: zh-TW
 update_url: https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/main/SKILL.md
 ---
@@ -36,13 +36,39 @@ https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/
 4. 若使用者要求可重現行為，應改用指定 commit SHA 或 tag 對應的固定版本 URL
 5. 若無法連網，才退回使用本地快取版本，並明確告知使用者目前不是最新版本
 
+## 零點五、實戰前置條件
+
+這份 skill 若要真正可用，而不是只停留在流程描述，代理應先完成下列安裝：
+
+```bash
+./install.sh
+notebooklm login
+./check_env.py
+```
+
+必要說明：
+
+- 必裝 Python 3.9+，不得略過
+- `./install.sh` 會 clone `wexin-read-mcp`
+- `./install.sh` 會安裝 `requirements.txt` 內的 Python 依賴
+- `./install.sh` 會安裝 Playwright 並執行 `playwright install chromium`
+- `./install.sh` 會安裝 `notebooklm` CLI
+- 以上 Python runtime 與 Playwright/Chromium 屬於必裝前置，不是可選建議
+- 沒有完成這些步驟時，微信公眾號、許多動態網頁與端到端 NotebookLM 操作都不應視為可靠可用
+
+強制規則：
+
+- 若 `./install.sh` 尚未完成，代理不得宣稱此 skill 已可完整使用
+- 若 `notebooklm login` 尚未完成，代理不得宣稱已可直接操作 NotebookLM
+- 若 `./check_env.py` 未通過關鍵檢查，代理必須先指出缺失，再決定是否降級
+
 ## 一、適用能力模型
 
 代理在使用本 Skill 時，優先判斷自己是否具備以下能力：
 
 1. 內容取得能力
 - 可讀取本機檔案
-- 可抓取公開網址
+- 可抓取公開網址，但是否可靠取決於是否已完成 runtime 安裝與瀏覽器自動化
 - 可呼叫 MCP 或外部抓取工具
 - 可執行搜尋
 
@@ -62,11 +88,53 @@ https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/
 
 若缺少其中某項能力，代理必須採用降級策略，而不是直接失敗。
 
+## 一點五、NotebookLM 執行層級
+
+本 Skill 應明確區分兩種執行層級，避免把「本機轉檔」誤寫成「所有來源都可靠可用」：
+
+### A. 基礎整理模式
+
+適用情境：
+
+- 只需要抓取來源
+- 只需要抽文字、OCR、轉錄、整理 Markdown / TXT
+- 由使用者手動上傳到 NotebookLM
+
+此模式下：
+
+- 不要求必須安裝 `notebooklm-py`
+- 不要求必須有瀏覽器自動化
+- 代理主要只能可靠處理本機檔案、使用者貼文、以及少數靜態網頁
+- 對微信公眾號、許多 X / Twitter 場景與反爬站點，不應預設可用
+
+### B. 完整自動化模式
+
+適用情境：
+
+- 代理需要直接操作 NotebookLM
+- 代理需要自動建立 notebook
+- 代理需要自動加入 source
+- 代理需要透過 NotebookLM 介面繼續完成後續流程
+
+必裝：
+
+```bash
+./install.sh
+notebooklm login
+./check_env.py
+```
+
+補充說明：
+
+- `./install.sh` 內部會安裝 Python 依賴、Playwright、Chromium、`notebooklm` CLI
+- 若只手動安裝 `pip install notebooklm-py`，不應視為等價完成安裝
+- 對微信公眾號、動態網頁、YouTube 匯入與端到端 NotebookLM 自動化而言，這些都是必要前置
+
 ## 二、支援的輸入來源
 
 ### 1. 微信公眾號文章
 - `https://mp.weixin.qq.com/...`
-- 優先使用專用 MCP 或抓取器
+- 必須優先使用專用 MCP 或抓取器，不要假設通用公開網頁抓取可行
 - 若無法抓取，要求使用者貼上內文或提供可讀副本
 
 ### 2. 一般網頁
@@ -76,8 +144,9 @@ https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/
 ### 3. X / Twitter 貼文與串文
 - `https://x.com/...`
 - `https://twitter.com/...`
-- 優先擷取公開貼文本文、作者、時間、串文順序、引用與回覆關係
-- 若無官方 API 或無登入態，可使用可用的 `Nitter` instance 作為 fallback 讀取公開內容
+- 若目前環境沒有官方 API、登入態或穩定官方頁面解析能力，優先使用可用的 `Nitter` / `Nitter` 類鏡像讀取公開內容
+- 只有在代理已確認官方頁面可穩定擷取時，才直接讀取 `x.com` / `twitter.com`
+- 目標仍是擷取公開貼文本文、作者、時間、串文順序、引用與回覆關係
 - 若 `Nitter` 也失敗，要求使用者貼上文字內容、提供可讀副本或用截圖搭配 OCR
 
 ### 4. YouTube 影片
@@ -177,8 +246,8 @@ https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/
 
 例如：
 
-- 抓不到微信文章時，改請使用者貼內容
-- 抓不到 X / Twitter 公開貼文時，改走 `Nitter`；若仍失敗，再要求使用者貼文內容或截圖
+- 抓不到微信文章時，明確回報目前缺少可用的微信專用抓取 runtime 或該來源被擋；再請使用者貼內容
+- 遇到 X / Twitter 公開貼文時，若無穩定登入態或官方解析能力，預設先走 `Nitter`；若 `Nitter` 失敗，再要求使用者貼文內容或截圖
 - 做不了 OCR 時，明確說明目前無法抽出圖片文字
 - 沒有 NotebookLM CLI 時，先整理成可匯入檔案交付使用者
 
@@ -212,9 +281,9 @@ https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/
 
 根據第二節已識別的來源類型，採用對應策略：
 
-1. 微信公眾號：優先專用抓取工具或 MCP；失敗則要求使用者提供全文或可讀副本
+1. 微信公眾號：必須先走專用 MCP 或抓取器；若沒有這些 runtime，直接視為能力不足，不要假裝可用；失敗才要求使用者提供全文或可讀副本
 2. 一般網頁：使用通用網頁抓取，保留標題、作者、時間、正文與來源網址
-3. X / Twitter：優先直接擷取公開內容；失敗則改用可用的 `Nitter` instance
+3. X / Twitter：若無穩定登入態、官方 API 或已驗證可用的官方頁面解析，預設先用可用的 `Nitter` instance；只有在官方頁面確定可穩定讀取時，才直接擷取公開內容
 4. YouTube：優先字幕與描述資訊；必要時再考慮音訊轉錄
 5. 本機文件：直接讀取並交給轉換器處理
 6. 圖片與掃描件：OCR
@@ -359,10 +428,17 @@ notebooklm source add "{normalized_file}" --wait
 - 讀取 `x.com` / `twitter.com` 公開貼文與串文
 
 可接受的實作：
+- 可用的 `Nitter` instance
+- `Nitter` 類公開鏡像
 - 官方 API
 - 已登入的瀏覽器自動化
-- 可用的 `Nitter` instance
 - 自建 HTML 解析器
+
+執行順序建議：
+
+1. 若沒有登入態、官方 API 或已驗證可用的官方解析器，先試 `Nitter` / `Nitter` 類鏡像
+2. 若官方頁面可穩定讀取，再直接抓 `x.com` / `twitter.com`
+3. 若兩者都不可用，再要求使用者提供貼文文字、thread 匯出、截圖或可公開閱讀副本
 
 若不可用：
 - 請使用者提供貼文文字
@@ -388,7 +464,7 @@ notebooklm source add "{normalized_file}" --wait
 
 ```text
 目前無法直接穩定讀取這則 X / Twitter 貼文。
-我可以改用可用的 Nitter 鏡像嘗試讀取公開內容；若仍失敗，請直接貼上貼文文字、thread 內容，或提供截圖讓我 OCR。
+我會先改用可用的 Nitter 或 Nitter 類鏡像嘗試讀取公開內容；若仍失敗，請直接貼上貼文文字、thread 內容，或提供截圖讓我 OCR。
 ```
 
 ### 2. 無法轉換文字
