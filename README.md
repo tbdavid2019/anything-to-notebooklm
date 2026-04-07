@@ -2,7 +2,7 @@
 
 A runnable NotebookLM skill/runtime for Codex, Gemini CLI, OpenCode CLI, Antigravity, and similar agentic developer tools.
 
-這是一份可跨工具使用、而且已補齊本機 runtime 的 NotebookLM skill，針對 Codex、Gemini CLI、OpenCode CLI、Antigravity 等代理式開發工具重新整理，目的是把多來源內容整理後匯入 NotebookLM，並依需求產出 Podcast、簡報、心智圖、測驗、報告等成果。
+這是一份可跨工具使用、而且已補齊本機 runtime 的 NotebookLM skill，針對 Codex、Gemini CLI、OpenCode CLI、Antigravity 等代理式開發工具重新整理，目的是把網頁、X/Twitter threads、YouTube、文件與搜尋結果整理後匯入 NotebookLM，並依需求產出 Podcast、簡報、心智圖、測驗、報告等成果。
 
 ## Status / 狀態
 
@@ -100,13 +100,13 @@ notebooklm source add "https://www.youtube.com/watch?v=Wye0r7uCh5s"
 - YouTube source ingestion through `notebooklm source add`
 - Local runtime installation through `./install.sh`
 - Local environment verification through `./check_env.py`
-- WeChat support via `wexin-read-mcp` after MCP wiring
+- optional restricted-source support via `wexin-read-mcp` after MCP wiring
 
 - NotebookLM 登入與 notebook 清單讀取
 - 透過 `notebooklm source add` 匯入 YouTube
 - 透過 `./install.sh` 完成本機 runtime 安裝
 - 透過 `./check_env.py` 檢查本機環境
-- 接好 MCP 後可支援微信公眾號
+- 接好 MCP 後可支援部分受限制來源
 
 ## Required Runtime / 必裝前置
 
@@ -126,38 +126,38 @@ This repo should be treated as runtime-first. Python and Playwright are not opti
 
 ```text
 ┌─────────────────────────────────────┐
-│          用户自然语言输入             │
-│  "把这篇文章生成播客 https://..."   │
+│          使用者自然語言輸入           │
+│  「把這支影片做成摘要 https://...」 │
 └──────────────┬──────────────────────┘
                │
                ▼
 ┌─────────────────────────────────────┐
-│        Claude Code Skill             │
-│  • 智能识别内容源类型                 │
-│  • 自动调用对应工具                   │
+│     Anything to NotebookLM Skill     │
+│  • 自動辨識來源類型                   │
+│  • 自動呼叫對應工具                   │
 └──────────────┬──────────────────────┘
                │
       ┌────────┴────────┐
       │                 │
       ▼                 ▼
-┌──────────┐     ┌─────────────┐
-│ 微信公众号 │     │  其他格式    │
-│ MCP 抓取  │     │ markitdown  │
-└─────┬────┘     └──────┬──────┘
-      │                 │
-      └────────┬────────┘
-               │
-               ▼
+┌──────────────────┐    ┌─────────────────┐
+│ X/Twitter 串文   │    │ YouTube / 文件  │
+│ Nitter / 網頁擷取 │    │ markitdown      │
+└────────┬─────────┘    └────────┬────────┘
+         │                       │
+         └──────────┬────────────┘
+                    │
+                    ▼
 ┌─────────────────────────────────────┐
-│         NotebookLM API               │
-│  • 上传内容源                         │
-│  • AI 生成目标格式                    │
+│          NotebookLM 來源處理         │
+│  • 上傳內容來源                       │
+│  • AI 產生目標格式                    │
 └──────────────┬──────────────────────┘
                │
                ▼
 ┌─────────────────────────────────────┐
-│           生成的文件                  │
-│  .mp3 / .pdf / .json / .md          │
+│             產出的檔案               │
+│   .mp3 / .pdf / .json / .md         │
 └─────────────────────────────────────┘
 ```
 
@@ -167,7 +167,7 @@ This repo should be treated as runtime-first. Python and Playwright are not opti
 flowchart LR
     A[User input] --> B[SKILL.md decision rules]
     B --> C{Source type}
-    C -->|WeChat| D[wexin-read-mcp]
+    C -->|X / Twitter threads| D[Nitter / public-web fallback]
     C -->|YouTube / URL| E[NotebookLM source add]
     C -->|PDF / DOCX / PPTX / Image / Audio| F[markitdown]
     F --> G[normalized text / markdown]
@@ -216,9 +216,9 @@ This repository contains a rewritten `SKILL.md` adapted from the original `anyth
 It helps an agent handle:
 
 - web pages
-- WeChat public articles
 - X / Twitter posts and threads
 - YouTube videos
+- optionally some restricted-source pages
 - PDF / DOCX / PPTX / XLSX / EPUB
 - Markdown / text files
 - images with OCR
@@ -229,9 +229,9 @@ It helps an agent handle:
 它可協助代理處理：
 
 - 網頁
-- 微信公眾號文章
 - X / Twitter 貼文與串文
 - YouTube 影片
+- 選配的受限制來源頁面
 - PDF / DOCX / PPTX / XLSX / EPUB
 - Markdown / 純文字
 - 圖片 OCR
@@ -349,7 +349,7 @@ What `./install.sh` does:
 
 `./install.sh` 會做的事：
 
-- clone `wexin-read-mcp` 來處理微信公眾號文章
+- clone `wexin-read-mcp` 來處理選配的受限制來源
 - 安裝 `requirements.txt` 內的 Python 依賴
 - 安裝 Playwright，並執行 `playwright install chromium`
 - 安裝 `notebooklm` CLI
@@ -387,11 +387,11 @@ Fallback still exists, but only for narrow cases such as local files, pasted tex
 
 - Without runtime: treat this repo as partially usable only
 - With runtime: YouTube, NotebookLM automation, and dynamic-source workflows become realistic
-- WeChat still requires MCP wiring in the host tool
+- some restricted sources still require optional MCP wiring in the host tool
 
 - 沒有 runtime：只能算部分可用
 - 有 runtime：YouTube、NotebookLM 自動化、動態來源流程才會比較接近可實戰
-- 微信仍需要在宿主工具中接好 MCP
+- 某些受限制來源仍需要在宿主工具中接好額外 MCP
 
 ## Source / 來源
 

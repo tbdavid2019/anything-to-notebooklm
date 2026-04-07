@@ -1,9 +1,9 @@
 ---
 name: anything-to-notebooklm-multitool-zh-tw
-description: 將網頁、微信文章、YouTube、PDF、Office、Markdown、圖片、音訊與搜尋結果整理後匯入 NotebookLM，並依需求產出 Podcast、簡報、心智圖、測驗、報告等成果。此版本針對 Codex、Gemini CLI、OpenCode CLI、Antigravity 等多種代理式開發工具重新設計。
+description: 將網頁、X/Twitter threads、YouTube、PDF、Office、Markdown、圖片、音訊與搜尋結果整理後匯入 NotebookLM，並依需求產出 Podcast、簡報、心智圖、測驗、報告等成果。此版本針對 Codex、Gemini CLI、OpenCode CLI、Antigravity 等多種代理式開發工具重新設計。
 user-invocable: true
 homepage: https://github.com/tbdavid2019/anything-to-notebooklm
-version: 2.1.0
+version: 2.1.1
 language: zh-TW
 update_url: https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/main/SKILL.md
 ---
@@ -54,7 +54,7 @@ notebooklm login
 - `./install.sh` 會安裝 Playwright 並執行 `playwright install chromium`
 - `./install.sh` 會安裝 `notebooklm` CLI
 - 以上 Python runtime 與 Playwright/Chromium 屬於必裝前置，不是可選建議
-- 沒有完成這些步驟時，微信公眾號、許多動態網頁與端到端 NotebookLM 操作都不應視為可靠可用
+- 沒有完成這些步驟時，受限制來源、許多動態網頁與端到端 NotebookLM 操作都不應視為可靠可用
 
 強制規則：
 
@@ -70,7 +70,7 @@ notebooklm login
 2. 預設先執行 `./check_env.py`；若檢查失敗，優先修環境，不要直接進入來源抓取
 3. 若本地尚未安裝 runtime，預設先執行 `./install.sh`
 4. 若 `notebooklm` 尚未登入，預設先要求或引導使用者完成 `notebooklm login`
-5. 對微信公眾號、動態網頁、YouTube 匯入、NotebookLM 產物生成，不得在未完成安裝時宣稱可用
+5. 對受限制來源、動態網頁、YouTube 匯入、NotebookLM 產物生成，不得在未完成安裝時宣稱可用
 6. 若宿主代理本身有 skill install / bootstrap 機制，應把 `install.sh` 視為本 skill 的必要 post-install step
 7. 若宿主代理無法執行 shell、無法建立 `.venv`、無法下載 Chromium、或無法登入 NotebookLM，必須直接告知「目前僅能提供部分流程，不是完整可用版本」
 
@@ -133,7 +133,7 @@ notebooklm login
 - 不要求必須安裝 `notebooklm-py`
 - 不要求必須有瀏覽器自動化
 - 代理主要只能可靠處理本機檔案、使用者貼文、以及少數靜態網頁
-- 對微信公眾號、許多 X / Twitter 場景與反爬站點，不應預設可用
+- 對受限制來源、許多 X / Twitter 場景與反爬站點，不應預設可用
 
 ### B. 完整自動化模式
 
@@ -156,20 +156,11 @@ notebooklm login
 
 - `./install.sh` 內部會安裝 Python 依賴、Playwright、Chromium、`notebooklm` CLI
 - 若只手動安裝 `pip install notebooklm-py`，不應視為等價完成安裝
-- 對微信公眾號、動態網頁、YouTube 匯入與端到端 NotebookLM 自動化而言，這些都是必要前置
+- 對受限制來源、動態網頁、YouTube 匯入與端到端 NotebookLM 自動化而言，這些都是必要前置
 
 ## 二、支援的輸入來源
 
-### 1. 微信公眾號文章
-- `https://mp.weixin.qq.com/...`
-- 必須優先使用專用 MCP 或抓取器，不要假設通用公開網頁抓取可行
-- 若無法抓取，要求使用者貼上內文或提供可讀副本
-
-### 2. 一般網頁
-- 新聞、部落格、文件、知識庫頁面
-- 優先保留標題、作者、時間、正文、來源網址
-
-### 3. X / Twitter 貼文與串文
+### 1. X / Twitter 貼文與串文
 - `https://x.com/...`
 - `https://twitter.com/...`
 - 若目前環境沒有官方 API、登入態或穩定官方頁面解析能力，優先使用可用的 `Nitter` / `Nitter` 類鏡像讀取公開內容
@@ -177,11 +168,15 @@ notebooklm login
 - 目標仍是擷取公開貼文本文、作者、時間、串文順序、引用與回覆關係
 - 若 `Nitter` 也失敗，要求使用者貼上文字內容、提供可讀副本或用截圖搭配 OCR
 
-### 4. YouTube 影片
+### 2. YouTube 影片
 - 優先取得字幕、標題、描述、時間長度
 - 若字幕不可得，標示限制並視能力決定是否轉錄音訊
 
-### 5. 本機文件
+### 3. 一般網頁
+- 新聞、部落格、文件、知識庫頁面
+- 優先保留標題、作者、時間、正文、來源網址
+
+### 4. 本機文件
 - PDF
 - DOCX
 - PPTX
@@ -190,37 +185,43 @@ notebooklm login
 - Markdown
 - TXT
 
-### 6. 圖片與掃描件
+### 5. 圖片與掃描件
 - JPG
 - PNG
 - WebP
 - GIF
 - 掃描 PDF
 
-### 7. 音訊
+### 6. 音訊
 - MP3
 - WAV
 - M4A
 - 其他可轉錄格式
 
-### 8. 結構化資料
+### 7. 結構化資料
 - CSV
 - JSON
 - XML
 
-### 9. 壓縮檔
+### 8. 壓縮檔
 - ZIP
 - 解壓後遞迴處理支援格式
 
-### 10. 搜尋查詢
+### 9. 搜尋查詢
 - 關鍵字
 - 主題詞
 - 問題句
 
-### 11. 混合來源
+### 10. 混合來源
 - 多個網址
 - 多個檔案
 - 網址加檔案混合
+
+### 11. 受限制來源（選配）
+- 例如某些需要額外 MCP、瀏覽器自動化或專用解析器的頁面
+- 可包含 `https://mp.weixin.qq.com/...` 這類來源
+- 不應視為主要預設使用情境
+- 若無法穩定抓取，要求使用者提供可讀副本、貼上文字或改提供其他來源
 
 ## 三、代理執行原則
 
@@ -274,7 +275,7 @@ notebooklm login
 
 例如：
 
-- 抓不到微信文章時，明確回報目前缺少可用的微信專用抓取 runtime 或該來源被擋；再請使用者貼內容
+- 抓不到受限制來源時，明確回報目前缺少可用的專用抓取 runtime 或該來源被擋；再請使用者貼內容
 - 遇到 X / Twitter 公開貼文時，若無穩定登入態或官方解析能力，預設先走 `Nitter`；若 `Nitter` 失敗，再要求使用者貼文內容或截圖
 - 做不了 OCR 時，明確說明目前無法抽出圖片文字
 - 沒有 NotebookLM CLI 時，先整理成可匯入檔案交付使用者
@@ -309,14 +310,14 @@ notebooklm login
 
 根據第二節已識別的來源類型，採用對應策略：
 
-1. 微信公眾號：必須先走專用 MCP 或抓取器；若沒有這些 runtime，直接視為能力不足，不要假裝可用；失敗才要求使用者提供全文或可讀副本
-2. 一般網頁：使用通用網頁抓取，保留標題、作者、時間、正文與來源網址
-3. X / Twitter：若無穩定登入態、官方 API 或已驗證可用的官方頁面解析，預設先用可用的 `Nitter` instance；只有在官方頁面確定可穩定讀取時，才直接擷取公開內容
-4. YouTube：優先字幕與描述資訊；必要時再考慮音訊轉錄
-5. 本機文件：直接讀取並交給轉換器處理
-6. 圖片與掃描件：OCR
-7. 音訊：語音轉文字
-8. 搜尋查詢：搜尋後彙整
+1. X / Twitter：若無穩定登入態、官方 API 或已驗證可用的官方頁面解析，預設先用可用的 `Nitter` instance；只有在官方頁面確定可穩定讀取時，才直接擷取公開內容
+2. YouTube：優先字幕與描述資訊；必要時再考慮音訊轉錄
+3. 一般網頁：使用通用網頁抓取，保留標題、作者、時間、正文與來源網址
+4. 本機文件：直接讀取並交給轉換器處理
+5. 圖片與掃描件：OCR
+6. 音訊：語音轉文字
+7. 搜尋查詢：搜尋後彙整
+8. 受限制來源：必須先走專用 MCP 或抓取器；若沒有這些 runtime，直接視為能力不足，不要假裝可用；失敗才要求使用者提供全文或可讀副本
 9. 任何來源若仍無法取得內容，才要求使用者補充資料
 
 ### Step 3：正規化內容
@@ -414,10 +415,11 @@ notebooklm source add "{normalized_file}" --wait
 
 ## 七、可選模組
 
-### 模組 A：微信讀取器
+### 模組 A：受限制來源讀取器（選配）
 
 用途：
-- 穩定抓取微信公眾號文章
+- 處理少數需要專用解析器或額外 MCP 的受限制來源
+- 微信文章僅屬其中一種可選情境，不是主要預設來源
 
 可接受的實作：
 - MCP server
