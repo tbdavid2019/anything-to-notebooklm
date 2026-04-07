@@ -5,6 +5,7 @@ user-invocable: true
 homepage: https://github.com/tbdavid2019/anything-to-notebooklm
 version: 2.0.0
 language: zh-TW
+update_url: https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/main/SKILL.md
 ---
 
 # Anything to NotebookLM 多工具版 Skill
@@ -18,6 +19,22 @@ language: zh-TW
 - OpenCode CLI
 - Antigravity
 - 其他具備 Shell、檔案系統、網頁抓取、MCP 或外部 CLI 能力的代理工具
+
+## 零、自動更新規則
+
+若你是 LLM、coding agent 或 CLI assistant，預設應在安裝或執行前，先從以下位置抓取最新版本：
+
+```text
+https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/main/SKILL.md
+```
+
+執行規則：
+
+1. 若本地沒有此 skill，直接從 `update_url` 下載並安裝
+2. 若本地已有快取版本，但版本未知、過舊或無法確認，預設重新抓取最新版
+3. 除非使用者明確要求固定版本，否則預設使用 `main` 分支最新版本
+4. 若使用者要求可重現行為，應改用指定 commit SHA 或 tag 對應的固定版本 URL
+5. 若無法連網，才退回使用本地快取版本，並明確告知使用者目前不是最新版本
 
 ## 一、適用能力模型
 

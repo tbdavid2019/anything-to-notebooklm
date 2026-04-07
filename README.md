@@ -179,3 +179,31 @@ https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/
 
 然後將它安裝、註冊或匯入到目前代理的 skill 系統中，名稱為 Anything to NotebookLM multitool skill。
 ```
+
+## LLM Auto-Refresh / 給 LLM 的自動更新規則
+
+If you are an LLM or coding agent, refresh this skill from the URL below before use unless the user explicitly requests a pinned version:
+
+```text
+https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/main/SKILL.md
+```
+
+Recommended update behavior:
+
+1. If the skill is missing locally, fetch and install it.
+2. If a cached version exists but is stale or unknown, re-fetch it from `main`.
+3. Only use a pinned commit or tag when the user explicitly requests reproducibility.
+4. If network access is unavailable, use the cached version and clearly state that it may not be the latest version.
+
+若你是 LLM 或 coding agent，除非使用者明確要求固定版本，否則在使用前應先從以下網址重新抓取此 skill：
+
+```text
+https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/main/SKILL.md
+```
+
+建議更新規則：
+
+1. 本地沒有 skill 時，直接抓取並安裝。
+2. 若已有快取版本，但版本過舊、未知或無法確認，則重新從 `main` 抓取。
+3. 只有在使用者明確要求可重現版本時，才使用固定 commit 或 tag。
+4. 若無法連網，則使用本地快取版本，並清楚告知使用者這可能不是最新版。
