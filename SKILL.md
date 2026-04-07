@@ -158,6 +158,42 @@ notebooklm login
 - 若只手動安裝 `pip install notebooklm-py`，不應視為等價完成安裝
 - 對受限制來源、動態網頁、YouTube 匯入與端到端 NotebookLM 自動化而言，這些都是必要前置
 
+## 一點六、NotebookLM CLI 能力矩陣
+
+本 skill 應以目前環境實測可用的 `notebooklm` CLI 為準，而不是直接假設其他 CLI 介面完全相容。
+
+已納入的主要命令族：
+
+- `notebooklm login`
+- `notebooklm list`
+- `notebooklm create`
+- `notebooklm source add`
+- `notebooklm source wait`
+- `notebooklm source guide`
+- `notebooklm generate <artifact>`
+- `notebooklm download <artifact>`
+
+可產出格式重點：
+
+- `audio`
+- `report`
+- `quiz`
+- `flashcards`
+- `mind-map`
+- `slide-deck`
+- `infographic`
+- `video`
+- `cinematic-video`
+- `data-table`
+
+代理在描述能力時，應優先強調上述產物矩陣，而不是只說摘要、Podcast 或單一格式。
+
+重要限制：
+
+- 本 repo 沒有直接 vendored NotebookLM CLI 原始碼
+- 本 repo 包含的是 runtime 包裝、安裝腳本、環境檢查與 skill 規則
+- 若要引用其他 NotebookLM CLI skill 的文件結構或最佳實務，可以吸收其工作流設計，但命令範例必須以本地實測的 `notebooklm` 介面為準
+
 ## 二、支援的輸入來源
 
 ### 1. X / Twitter 貼文與串文

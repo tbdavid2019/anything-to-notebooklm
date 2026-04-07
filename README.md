@@ -108,6 +108,36 @@ notebooklm source add "https://www.youtube.com/watch?v=Wye0r7uCh5s"
 - 透過 `./check_env.py` 檢查本機環境
 - 接好 MCP 後可支援部分受限制來源
 
+## Output Formats / 可產出格式
+
+This repo is not limited to summaries. Once sources are in NotebookLM, the CLI can drive multiple artifact types.
+
+這個 repo 不只支援摘要。只要來源已進入 NotebookLM，就能透過 CLI 驅動多種產物。
+
+| Type | Artifact | Example command family |
+|---|---|---|
+| Audio | Podcast / audio overview | `notebooklm generate audio` |
+| Writing | Report | `notebooklm generate report` |
+| Study | Quiz | `notebooklm generate quiz` |
+| Study | Flashcards | `notebooklm generate flashcards` |
+| Visual | Mind map | `notebooklm generate mind-map` |
+| Visual | Slide deck | `notebooklm generate slide-deck` |
+| Visual | Infographic | `notebooklm generate infographic` |
+| Video | Video / cinematic video | `notebooklm generate video` / `cinematic-video` |
+| Structured extraction | Data table | `notebooklm generate data-table` |
+
+| 類型 | 產物 | 代表指令群 |
+|---|---|---|
+| 音訊 | Podcast / audio overview | `notebooklm generate audio` |
+| 文字 | Report | `notebooklm generate report` |
+| 學習材料 | Quiz | `notebooklm generate quiz` |
+| 學習材料 | Flashcards | `notebooklm generate flashcards` |
+| 視覺化 | Mind map | `notebooklm generate mind-map` |
+| 視覺化 | Slide deck | `notebooklm generate slide-deck` |
+| 視覺化 | Infographic | `notebooklm generate infographic` |
+| 影片 | Video / cinematic video | `notebooklm generate video` / `cinematic-video` |
+| 結構化擷取 | Data table | `notebooklm generate data-table` |
+
 ## Required Runtime / 必裝前置
 
 This repo should be treated as runtime-first. Python and Playwright are not optional if you want real ingestion instead of documentation-only behavior.
@@ -174,7 +204,7 @@ flowchart LR
     D --> G
     E --> H[NotebookLM notebook]
     G --> H
-    H --> I[report / quiz / mind-map / audio / slide-deck]
+    H --> I[audio / report / quiz / flashcards / mind-map / slide-deck / infographic / video / data-table]
 ```
 
 ### Installation Flow
@@ -378,6 +408,32 @@ Result:
 - 建立 notebook 成功
 - YouTube 來源匯入成功
 - NotebookLM 已回傳來源摘要與關鍵詞
+
+## NotebookLM CLI Coverage / NotebookLM CLI 能力覆蓋
+
+This repo currently wraps and documents the `notebooklm` CLI we actually tested locally. It does not vendor the CLI source code into this repository.
+
+這個 repo 目前是包裝並記錄本機已實測的 `notebooklm` CLI 用法，並沒有把 CLI 原始碼直接放進 repo。
+
+What is included here:
+
+- local installer and runtime bootstrap
+- `SKILL.md` workflow rules
+- environment checks
+- tested `notebooklm` command patterns
+
+What is not vendored here:
+
+- the upstream NotebookLM CLI source code itself
+- a full copy of `jacob-bd/notebooklm-cli`
+
+Included command families we rely on:
+
+- `notebooklm login`
+- `notebooklm list` / `create`
+- `notebooklm source add` / `wait` / `guide`
+- `notebooklm generate <artifact>`
+- `notebooklm download <artifact>`
 
 ## Runtime Expectations / 執行預期
 
