@@ -79,6 +79,34 @@ This version removes hard-coded platform assumptions and reframes the skill as a
 原始版本可用，但與單一執行環境及特定 MCP 設定綁得太深。
 本版本將它改寫為可攜式 workflow spec，便於在不同代理工具中落地。
 
+More specifically, the original version had several structural issues:
+
+- too tightly coupled to a single execution environment
+- implementation details were emphasized more than reusable agent decision flow
+- fallback behavior across tools was not clearly defined
+- NotebookLM command mapping existed, but agent-side execution rules were incomplete
+
+更具體地說，原始版本有幾個明顯限制：
+
+- 過度綁定單一執行環境
+- 實作耦合高於流程抽象
+- 缺少跨工具 fallback 策略
+- 指令映射偏 NotebookLM 專屬，代理推理規則不夠完整
+
+This rewrite therefore focuses on:
+
+- shifting from tool-specific dependencies to capability-based design
+- expressing the workflow as agent-executable decision rules
+- keeping NotebookLM as the target system without binding the skill to one agent
+- rewriting the content into Traditional Chinese
+
+因此這次改寫的核心是：
+
+- 將工具依賴改成能力依賴
+- 將流程寫成代理可執行的決策規格
+- 保留 NotebookLM 為目標系統，但不把 Skill 綁死在單一代理
+- 全面改為繁體中文
+
 ## Usage / 使用方式
 
 Open `SKILL.md` and adapt it into your agent system, CLI workflow, or prompt framework.
