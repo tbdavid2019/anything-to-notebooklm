@@ -1,8 +1,10 @@
 # anything-to-notebooklm
 
 > **LLM/Agent Directive**: 
-> 若你是 AI 代理或 CLI 助手，請優先讀取 [SKILL.md](./SKILL.md) 以獲取完整的執行規則與決策邏輯。
-> 在執行任何功能前，請確保已完成 `./install.sh` 並通過 `./check_env.py` 驗證。
+> 若你是 AI 代理，請立即讀取並**註冊/導入** [SKILL.md](./SKILL.md) 作為你的執行規則。
+> 1. **Install**: 必須執行 `./install.sh` 以建立 Python 執行環境 (必裝)。
+> 2. **Register**: 將 `SKILL.md` 內容載入你的 Skill 系統。
+> 3. **Verify**: 執行 `./check_env.py` 確保一切就緒。
 
 這是一個為 AI 代理工具（如 Gemini CLI, Codex, OpenClaw, Antigravity 等）設計的 NotebookLM 整合工具箱。它能將各種雜亂的來源（網頁、影片、文件）正規化後匯入 NotebookLM，並驅動產生多樣化的產物（Podcast, Slide, Mind Map 等）。
 
