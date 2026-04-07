@@ -1,519 +1,110 @@
 # anything-to-notebooklm
 
-A runnable NotebookLM skill/runtime for Codex, Gemini CLI, OpenCode CLI, Antigravity, and similar agentic developer tools.
+> **LLM/Agent Directive**: 
+> 若你是 AI 代理或 CLI 助手，請優先讀取 [SKILL.md](./SKILL.md) 以獲取完整的執行規則與決策邏輯。
+> 在執行任何功能前，請確保已完成 `./install.sh` 並通過 `./check_env.py` 驗證。
 
-這是一份可跨工具使用、而且已補齊本機 runtime 的 NotebookLM skill，針對 Codex、Gemini CLI、OpenCode CLI、Antigravity 等代理式開發工具重新整理，目的是把網頁、X/Twitter threads、YouTube、文件與搜尋結果整理後匯入 NotebookLM，並依需求產出 Podcast、簡報、心智圖、測驗、報告等成果。
+這是一個為 AI 代理工具（如 Gemini CLI, Codex, OpenClaw, Antigravity 等）設計的 NotebookLM 整合工具箱。它能將各種雜亂的來源（網頁、影片、文件）正規化後匯入 NotebookLM，並驅動產生多樣化的產物（Podcast, Slide, Mind Map 等）。
 
-## Status / 狀態
+---
 
-This repo is no longer just a rewritten prompt spec. It now includes the local runtime bootstrap needed for real execution.
+## 🚀 快速開始 (Quick Start)
 
-這個 repo 現在已整理成可在本機實際執行的 runtime，不再只是改寫後的 prompt 規格。
-
-Verified locally on 2026-04-07:
-
-- `./install.sh` completed successfully with a local `.venv`
-- Playwright Chromium installed successfully
-- `notebooklm login` completed successfully
-- `notebooklm list` returned real notebook data
-- YouTube source ingestion was tested successfully with `https://www.youtube.com/watch?v=Wye0r7uCh5s`
-
-本機已驗證項目：
-
-- `./install.sh` 可正常完成，並使用 repo 內 `.venv`
-- Playwright Chromium 已安裝成功
-- `notebooklm login` 已可正常登入
-- `notebooklm list` 已可讀到真實 notebook 清單
-- YouTube 來源已實測成功，可匯入 `https://www.youtube.com/watch?v=Wye0r7uCh5s`
-
-## Quick Start / 快速開始
+本專案採 **Runtime-First** 設計，必須先安裝本機執行環境：
 
 ```bash
-cd /Users/david/Documents/git/tbdavid2019/anything-to-notebooklm
+# 1. 安裝環境 (含 Python venv, Playwright, CLI 工具)
 ./install.sh
-/Users/david/Documents/git/tbdavid2019/anything-to-notebooklm/.venv/bin/notebooklm login
+
+# 2. 登入 NotebookLM (會開啟瀏覽器)
+./.venv/bin/notebooklm login
+
+# 3. 驗證環境
 ./check_env.py
 ```
 
-## OpenClaw Install / OpenClaw 安裝方式
-
-This repo is not an OpenClaw plugin. It should be installed as a local OpenClaw skill directory containing `SKILL.md`.
-
-這個 repo 不是 OpenClaw plugin；正確用法是把它安裝成一個含有 `SKILL.md` 的 OpenClaw 本機 skill 目錄。
-
-Recommended path:
-
+驗證成功後，你可以直接使用 `notebooklm` 指令：
 ```bash
-~/.openclaw/skills/anything-to-notebooklm
-```
-
-Install by symlink:
-
-```bash
-mkdir -p ~/.openclaw/skills
-ln -s /Users/david/Documents/git/tbdavid2019/anything-to-notebooklm ~/.openclaw/skills/anything-to-notebooklm
-```
-
-Then install the runtime:
-
-```bash
-cd ~/.openclaw/skills/anything-to-notebooklm
-./install.sh
-```
-
-Then verify OpenClaw can see it:
-
-```bash
-openclaw skills list
-openclaw skills check
-```
-
-Notes:
-
-- OpenClaw discovers skills from skill directories containing `SKILL.md`
-- `openclaw plugins install` is not the right command for this repo
-- the runtime still lives inside this repo via `.venv`, `install.sh`, and `check_env.py`
-
-說明：
-
-- OpenClaw 會從含有 `SKILL.md` 的 skill 目錄發現這個 skill
-- `openclaw plugins install` 並不是這個 repo 的正確安裝方式
-- 真正的 runtime 仍然由這個 repo 內的 `.venv`、`install.sh`、`check_env.py` 提供
-
-For command-line use, prepend the local virtualenv to `PATH`:
-
-```bash
-export PATH="/Users/david/Documents/git/tbdavid2019/anything-to-notebooklm/.venv/bin:$PATH"
-```
-
-Then you can run:
-
-```bash
+export PATH="$(pwd)/.venv/bin:$PATH"
 notebooklm list
-notebooklm create "demo"
 notebooklm source add "https://www.youtube.com/watch?v=Wye0r7uCh5s"
 ```
 
-## What Works / 目前可用
+---
 
-- NotebookLM login and notebook listing
-- YouTube source ingestion through `notebooklm source add`
-- Local runtime installation through `./install.sh`
-- Local environment verification through `./check_env.py`
-- optional restricted-source support via `wexin-read-mcp` after MCP wiring
+## 🛠️ 核心功能與設計 (Core Capabilities)
 
-- NotebookLM 登入與 notebook 清單讀取
-- 透過 `notebooklm source add` 匯入 YouTube
-- 透過 `./install.sh` 完成本機 runtime 安裝
-- 透過 `./check_env.py` 檢查本機環境
-- 接好 MCP 後可支援部分受限制來源
+本工具的核心價值在於 **「萬物皆可 NotebookLM」**。它不僅僅是一個 Prompt，而是一套完整的執行流程：
 
-## Output Formats / 可產出格式
+### 1. 支援的輸入來源 (Input Sources)
+*   **Social Media**: 支援 `X/Twitter` 串文（優先透過 `Nitter` fallback 確保穩定性）。
+*   **Video**: 自動擷取 `YouTube` 字幕與資訊。
+*   **Web**: 一般網頁、部落格，以及受限制來源（如微信公眾號，需搭配 MCP）。
+*   **Documents**: `PDF`, `DOCX`, `PPTX`, `XLSX`, `EPUB`, `Markdown`, `TXT`。
+*   **Multimedia**: 圖片 `OCR` (JPG, PNG) 與音訊轉文字 (MP3, WAV)。
 
-This repo is not limited to summaries. Once sources are in NotebookLM, the CLI can drive multiple artifact types.
+### 2. 產出的格式矩陣 (Output Artifacts)
+只要內容進入 NotebookLM，即可透過指令生成：
+*   **Audio**: Podcast / Audio Overview
+*   **Writing**: 專業報告 (Report), 摘要 (Summary)
+*   **Study**: 測驗 (Quiz), 閃卡 (Flashcards)
+*   **Visual**: 心智圖 (Mind Map), 簡報 (Slide Deck), 資訊圖表 (Infographic)
+*   **Video**: 影片 (Video), 電影感影片 (Cinematic Video)
+*   **Data**: 結構化資料表 (Data Table)
 
-這個 repo 不只支援摘要。只要來源已進入 NotebookLM，就能透過 CLI 驅動多種產物。
+---
 
-| Type | Artifact | Example command family |
-|---|---|---|
-| Audio | Podcast / audio overview | `notebooklm generate audio` |
-| Writing | Report | `notebooklm generate report` |
-| Study | Quiz | `notebooklm generate quiz` |
-| Study | Flashcards | `notebooklm generate flashcards` |
-| Visual | Mind map | `notebooklm generate mind-map` |
-| Visual | Slide deck | `notebooklm generate slide-deck` |
-| Visual | Infographic | `notebooklm generate infographic` |
-| Video | Video / cinematic video | `notebooklm generate video` / `cinematic-video` |
-| Structured extraction | Data table | `notebooklm generate data-table` |
+## 📦 安裝指引 (Installation)
 
-| 類型 | 產物 | 代表指令群 |
-|---|---|---|
-| 音訊 | Podcast / audio overview | `notebooklm generate audio` |
-| 文字 | Report | `notebooklm generate report` |
-| 學習材料 | Quiz | `notebooklm generate quiz` |
-| 學習材料 | Flashcards | `notebooklm generate flashcards` |
-| 視覺化 | Mind map | `notebooklm generate mind-map` |
-| 視覺化 | Slide deck | `notebooklm generate slide-deck` |
-| 視覺化 | Infographic | `notebooklm generate infographic` |
-| 影片 | Video / cinematic video | `notebooklm generate video` / `cinematic-video` |
-| 結構化擷取 | Data table | `notebooklm generate data-table` |
+### 通用安裝 (General)
+建議直接 Clone 本 Repo 並執行 `./install.sh`。它會建立一個獨立的 `.venv`，不會污染你的系統環境。
 
-## Required Runtime / 必裝前置
+### OpenClaw 安裝
+本 Repo 應安裝為 OpenClaw 的 **Skill Directory** 而非 Plugin：
 
-This repo should be treated as runtime-first. Python and Playwright are not optional if you want real ingestion instead of documentation-only behavior.
-
-這個 repo 應視為 runtime-first。若你要真正可用的匯入流程，而不是只看文件，Python 與 Playwright 都不是可選項。
-
-- Python 3.9+
-- local virtualenv created by `./install.sh`
-- Playwright + Chromium
-- `notebooklm` CLI
-- NotebookLM login session
-
-## Diagrams / 說明圖
-
-### ASCII Flow
-
-```text
-┌─────────────────────────────────────┐
-│          使用者自然語言輸入           │
-│  「把這支影片做成摘要 https://...」 │
-└──────────────┬──────────────────────┘
-               │
-               ▼
-┌─────────────────────────────────────┐
-│     Anything to NotebookLM Skill     │
-│  • 自動辨識來源類型                   │
-│  • 自動呼叫對應工具                   │
-└──────────────┬──────────────────────┘
-               │
-      ┌────────┴────────┐
-      │                 │
-      ▼                 ▼
-┌──────────────────┐    ┌─────────────────┐
-│ X/Twitter 串文   │    │ YouTube / 文件  │
-│ Nitter / 網頁擷取 │    │ markitdown      │
-└────────┬─────────┘    └────────┬────────┘
-         │                       │
-         └──────────┬────────────┘
-                    │
-                    ▼
-┌─────────────────────────────────────┐
-│          NotebookLM 來源處理         │
-│  • 上傳內容來源                       │
-│  • AI 產生目標格式                    │
-└──────────────┬──────────────────────┘
-               │
-               ▼
-┌─────────────────────────────────────┐
-│             產出的檔案               │
-│   .mp3 / .pdf / .json / .md         │
-└─────────────────────────────────────┘
+```bash
+mkdir -p ~/.openclaw/skills
+ln -s /path/to/anything-to-notebooklm ~/.openclaw/skills/anything-to-notebooklm
+cd ~/.openclaw/skills/anything-to-notebooklm
+./install.sh
 ```
+安裝後，OpenClaw 會自動從 `SKILL.md` 發現此技能。
 
-### Runtime Flow
+---
 
+## 📊 執行流程 (Diagrams)
+
+### 執行邏輯 (Runtime Flow)
 ```mermaid
 flowchart LR
-    A[User input] --> B[SKILL.md decision rules]
-    B --> C{Source type}
-    C -->|X / Twitter threads| D[Nitter / public-web fallback]
-    C -->|YouTube / URL| E[NotebookLM source add]
-    C -->|PDF / DOCX / PPTX / Image / Audio| F[markitdown]
-    F --> G[normalized text / markdown]
-    D --> G
-    E --> H[NotebookLM notebook]
-    G --> H
-    H --> I[audio / report / quiz / flashcards / mind-map / slide-deck / infographic / video / data-table]
+    A[User Input] --> B[SKILL.md Rules]
+    B --> C{Source Type}
+    C -->|Social/Web| D[Crawler/Nitter]
+    C -->|YouTube| E[Direct Ingestion]
+    C -->|Local Files| F[Markitdown/OCR]
+    D & E & F --> G[Normalized Markdown]
+    G --> H[NotebookLM Ingestion]
+    H --> I[Generate Artifacts]
 ```
 
-### Installation Flow
-
+### 安裝流程 (Installation Flow)
 ```mermaid
 flowchart TD
-    A[./install.sh] --> B[create .venv]
-    B --> C[clone wexin-read-mcp]
-    C --> D[install Python dependencies]
-    D --> E[playwright install chromium]
-    E --> F[install notebooklm CLI]
+    A[./install.sh] --> B[Create .venv]
+    B --> C[Clone wexin-read-mcp]
+    C --> D[Install Python Deps]
+    D --> E[Playwright Chromium]
+    E --> F[Install NotebookLM CLI]
     F --> G[notebooklm login]
-    G --> H[./check_env.py]
 ```
 
-## Overview / 簡介
+---
 
-This repository contains a rewritten `SKILL.md` adapted from the original `anything-to-notebooklm` concept, but redesigned to be:
+## 💡 為何重寫此專案？ (Context)
 
-- tool-agnostic
-- workflow-oriented
-- fallback-friendly
-- suitable for multiple CLI agents
+原始版本高度耦合於特定環境。本版本（v2.0+）進行了以下優化：
+1.  **Capability-Based**: 從工具依賴轉向能力依賴，支援多種代理工具。
+2.  **Agent-Executable**: 將流程寫成 LLM 可理解的決策規則 (`SKILL.md`)。
+3.  **Full Automation**: 包含完整的本機 Runtime 安裝腳本，不再只是文字說明。
 
-本 repo 內的 `SKILL.md` 並非只綁定單一平台，而是改成：
-
-- 以能力導向而非平台導向設計
-- 以代理工作流程為核心
-- 具備降級與 fallback 策略
-- 適合多種 CLI / agent 工具共用
-
-## Included / 內容
-
-- `SKILL.md`: Traditional Chinese multitool skill
-- `README.md`: Bilingual Traditional Chinese + English overview
-
-## What This Skill Does / 這份 Skill 能做什麼
-
-It helps an agent handle:
-
-- web pages
-- X / Twitter posts and threads
-- YouTube videos
-- optionally some restricted-source pages
-- PDF / DOCX / PPTX / XLSX / EPUB
-- Markdown / text files
-- images with OCR
-- audio transcription
-- search-result aggregation
-- mixed multi-source ingestion
-
-它可協助代理處理：
-
-- 網頁
-- X / Twitter 貼文與串文
-- YouTube 影片
-- 選配的受限制來源頁面
-- PDF / DOCX / PPTX / XLSX / EPUB
-- Markdown / 純文字
-- 圖片 OCR
-- 音訊轉文字
-- 搜尋結果彙整
-- 多來源混合匯入
-
-## Design Principles / 設計原則
-
-The rewritten skill focuses on a stable execution flow:
-
-1. detect source type
-2. acquire content
-3. normalize to clean text or Markdown
-4. import into NotebookLM
-5. generate requested artifacts
-6. report outputs and limitations
-
-改寫後的核心流程是：
-
-1. 辨識來源
-2. 取得內容
-3. 正規化成乾淨文字或 Markdown
-4. 匯入 NotebookLM
-5. 依需求產生成果
-6. 回報輸出與限制
-
-## X / Twitter Support / X / Twitter 支援
-
-This repository now includes support guidance for `x.com` and `twitter.com` sources.
-For public posts and threads, the preferred strategy is:
-
-1. if there is no authenticated API, login session, or proven stable official parser, try a working `Nitter` instance first
-2. use direct extraction from `x.com` / `twitter.com` only when the agent has already confirmed it is reliable in the current environment
-3. if both fail, ask the user for pasted text, screenshots, or an exported thread
-
-目前這個版本已加入 `x.com` 與 `twitter.com` 來源支援。
-對公開貼文與串文，建議流程是：
-
-1. 若沒有登入態、官方 API 或已驗證穩定可用的官方解析能力，先試可用的 `Nitter` instance
-2. 只有在代理已確認 `x.com` / `twitter.com` 可穩定讀取時，才直接抓官方頁面
-3. 若仍失敗，要求使用者提供貼文文字、截圖或 thread 匯出
-
-Because `Nitter` is not an official interface and instance stability varies, the skill treats it as the preferred public-web fallback path when official extraction is not already proven reliable in the current environment.
-
-由於 `Nitter` 並非官方介面，而且各 instance 穩定性不一，因此當前 skill 將它定位為「公開網頁場景下的優先 fallback 路徑」；只有在官方頁面已被驗證可穩定讀取時，才直接抓官方頁面。
-
-## Why This Rewrite / 為什麼要重寫
-
-The original version was useful, but heavily coupled to a single environment and specific MCP assumptions.
-This version removes hard-coded platform assumptions and reframes the skill as a portable workflow spec.
-
-原始版本可用，但與單一執行環境及特定 MCP 設定綁得太深。
-本版本將它改寫為可攜式 workflow spec，便於在不同代理工具中落地。
-
-More specifically, the original version had several structural issues:
-
-- too tightly coupled to a single execution environment
-- implementation details were emphasized more than reusable agent decision flow
-- fallback behavior across tools was not clearly defined
-- NotebookLM command mapping existed, but agent-side execution rules were incomplete
-
-更具體地說，原始版本有幾個明顯限制：
-
-- 過度綁定單一執行環境
-- 實作耦合高於流程抽象
-- 缺少跨工具 fallback 策略
-- 指令映射偏 NotebookLM 專屬，代理推理規則不夠完整
-
-This rewrite therefore focuses on:
-
-- shifting from tool-specific dependencies to capability-based design
-- expressing the workflow as agent-executable decision rules
-- keeping NotebookLM as the target system without binding the skill to one agent
-- rewriting the content into Traditional Chinese
-
-因此這次改寫的核心是：
-
-- 將工具依賴改成能力依賴
-- 將流程寫成代理可執行的決策規格
-- 保留 NotebookLM 為目標系統，但不把 Skill 綁死在單一代理
-- 全面改為繁體中文
-
-## Usage / 使用方式
-
-Open `SKILL.md` and adapt it into your agent system, CLI workflow, or prompt framework.
-If your environment can directly control NotebookLM, use the skill end-to-end.
-If not, use the normalization steps first and hand off the generated Markdown/TXT files for manual upload.
-
-你可以直接把 `SKILL.md` 納入自己的代理系統、CLI 工作流或 prompt framework。
-若當前環境能直接操作 NotebookLM，可完整執行整套流程。
-若無法直接操作，也可以先用 skill 完成內容整理，再手動上傳整理好的 Markdown / TXT 檔案。
-
-## Practical Setup / 實戰安裝
-
-This rewritten repo is not just a text spec anymore. It includes the runtime bootstrap files needed to match the upstream executable workflow more closely.
-
-這個改寫 repo 現在不再只是文字規格，也補進了接近 upstream 實戰流程所需的啟動檔。
-
-Recommended setup:
-
-```bash
-./install.sh
-notebooklm login
-./check_env.py
-```
-
-What `./install.sh` does:
-
-- clones `wexin-read-mcp` for WeChat article extraction
-- installs Python runtime dependencies from `requirements.txt`
-- installs Playwright and runs `playwright install chromium`
-- installs `notebooklm` CLI
-- installs everything into a local `.venv` instead of polluting system Python
-
-`./install.sh` 會做的事：
-
-- clone `wexin-read-mcp` 來處理選配的受限制來源
-- 安裝 `requirements.txt` 內的 Python 依賴
-- 安裝 Playwright，並執行 `playwright install chromium`
-- 安裝 `notebooklm` CLI
-- 所有 Python 套件都會安裝到 repo 內的 `.venv`
-
-## Tested Example / 已實測範例
-
-The following command sequence has been tested successfully in this repo:
-
-```bash
-export PATH="/Users/david/Documents/git/tbdavid2019/anything-to-notebooklm/.venv/bin:$PATH"
-notebooklm create "yt-test-Wye0r7uCh5s"
-notebooklm source add "https://www.youtube.com/watch?v=Wye0r7uCh5s" -n <NOTEBOOK_ID>
-notebooklm source wait <SOURCE_ID> -n <NOTEBOOK_ID> --timeout 300
-notebooklm source guide <SOURCE_ID> -n <NOTEBOOK_ID>
-```
-
-Result:
-
-- Notebook creation succeeded
-- YouTube source ingestion succeeded
-- NotebookLM returned a source summary and keywords
-
-結果：
-
-- 建立 notebook 成功
-- YouTube 來源匯入成功
-- NotebookLM 已回傳來源摘要與關鍵詞
-
-## NotebookLM CLI Coverage / NotebookLM CLI 能力覆蓋
-
-This repo currently wraps and documents the `notebooklm` CLI we actually tested locally. It does not vendor the CLI source code into this repository.
-
-這個 repo 目前是包裝並記錄本機已實測的 `notebooklm` CLI 用法，並沒有把 CLI 原始碼直接放進 repo。
-
-What is included here:
-
-- local installer and runtime bootstrap
-- `SKILL.md` workflow rules
-- environment checks
-- tested `notebooklm` command patterns
-
-What is not vendored here:
-
-- the upstream NotebookLM CLI source code itself
-- a full copy of `jacob-bd/notebooklm-cli`
-
-Included command families we rely on:
-
-- `notebooklm login`
-- `notebooklm list` / `create`
-- `notebooklm source add` / `wait` / `guide`
-- `notebooklm generate <artifact>`
-- `notebooklm download <artifact>`
-
-## Runtime Expectations / 執行預期
-
-Fallback still exists, but only for narrow cases such as local files, pasted text, and a few static pages. Real-world coverage depends on the installed runtime.
-
-降級流程仍然存在，但只適用於本機檔案、貼上的文字與少數靜態頁面。真實世界的來源覆蓋率仍取決於 runtime 是否安裝完成。
-
-- Without runtime: treat this repo as partially usable only
-- With runtime: YouTube, NotebookLM automation, and dynamic-source workflows become realistic
-- some restricted sources still require optional MCP wiring in the host tool
-
-- 沒有 runtime：只能算部分可用
-- 有 runtime：YouTube、NotebookLM 自動化、動態來源流程才會比較接近可實戰
-- 某些受限制來源仍需要在宿主工具中接好額外 MCP
-
-## Source / 來源
-
-Original inspiration:
-- https://github.com/joeseesun/anything-to-notebooklm
-
-This repository contains a rewritten and localized Traditional Chinese multitool version.
-
-本 repo 收錄的是重新分析、改寫並繁體中文化後的多工具版本。
-
-## LLM Installation Guide / 給 LLM 的安裝指引
-
-If you are an LLM, coding agent, or CLI assistant, do not treat this repository as documentation only. Read the skill file directly from the raw GitHub URL below and install or import it into your skill system:
-
-```text
-https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/main/SKILL.md
-```
-
-Recommended instruction for agents:
-
-```text
-Read the skill definition from:
-https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/main/SKILL.md
-
-Then install, register, or import it into the current agent's skill system as the Anything to NotebookLM multitool skill.
-```
-
-若你是 LLM、coding agent 或 CLI assistant，請不要只把這個 repo 當成一般說明文件。請直接從以下 raw URL 讀取 skill 內容，並安裝或匯入到你目前的 skill 系統中：
-
-```text
-https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/main/SKILL.md
-```
-
-建議給代理的安裝指令：
-
-```text
-請從以下位置讀取 skill 定義：
-https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/main/SKILL.md
-
-然後將它安裝、註冊或匯入到目前代理的 skill 系統中，名稱為 Anything to NotebookLM multitool skill。
-```
-
-## LLM Auto-Refresh / 給 LLM 的自動更新規則
-
-If you are an LLM or coding agent, refresh this skill from the URL below before use unless the user explicitly requests a pinned version:
-
-```text
-https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/main/SKILL.md
-```
-
-Recommended update behavior:
-
-1. If the skill is missing locally, fetch and install it.
-2. If a cached version exists but is stale or unknown, re-fetch it from `main`.
-3. Only use a pinned commit or tag when the user explicitly requests reproducibility.
-4. If network access is unavailable, use the cached version and clearly state that it may not be the latest version.
-
-若你是 LLM 或 coding agent，除非使用者明確要求固定版本，否則在使用前應先從以下網址重新抓取此 skill：
-
-```text
-https://raw.githubusercontent.com/tbdavid2019/anything-to-notebooklm/refs/heads/main/SKILL.md
-```
-
-建議更新規則：
-
-1. 本地沒有 skill 時，直接抓取並安裝。
-2. 若已有快取版本，但版本過舊、未知或無法確認，則重新從 `main` 抓取。
-3. 只有在使用者明確要求可重現版本時，才使用固定 commit 或 tag。
-4. 若無法連網，則使用本地快取版本，並清楚告知使用者這可能不是最新版。
+**Source / 來源**: 靈感啟發自 [joeseesun/anything-to-notebooklm](https://github.com/joeseesun/anything-to-notebooklm)，本 Repo 為繁體中文優化與多工具實作版。
