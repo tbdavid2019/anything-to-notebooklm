@@ -32,6 +32,7 @@ It helps an agent handle:
 - web pages
 - WeChat public articles
 - YouTube videos
+- X / Twitter posts and threads
 - PDF / DOCX / PPTX / XLSX / EPUB
 - Markdown / text files
 - images with OCR
@@ -44,6 +45,7 @@ It helps an agent handle:
 - 網頁
 - 微信公眾號文章
 - YouTube 影片
+- X / Twitter 貼文與串文
 - PDF / DOCX / PPTX / XLSX / EPUB
 - Markdown / 純文字
 - 圖片 OCR
@@ -70,6 +72,26 @@ The rewritten skill focuses on a stable execution flow:
 4. 匯入 NotebookLM
 5. 依需求產生成果
 6. 回報輸出與限制
+
+## X / Twitter Support / X / Twitter 支援
+
+This repository now includes support guidance for `x.com` and `twitter.com` sources.
+For public posts and threads, the preferred strategy is:
+
+1. use direct extraction when available
+2. fall back to a working `Nitter` instance for public content
+3. if both fail, ask the user for pasted text, screenshots, or an exported thread
+
+目前這個版本已加入 `x.com` 與 `twitter.com` 來源支援。
+對公開貼文與串文，建議流程是：
+
+1. 優先直接讀取公開內容
+2. 若失敗，改用可用的 `Nitter` instance 當 fallback
+3. 若仍失敗，要求使用者提供貼文文字、截圖或 thread 匯出
+
+Because `Nitter` is not an official interface and instance stability varies, the skill treats it as a fallback rather than a guaranteed primary source.
+
+由於 `Nitter` 並非官方介面，而且各 instance 穩定性不一，因此 skill 將它視為 fallback，而不是保證可用的主要來源。
 
 ## Why This Rewrite / 為什麼要重寫
 
