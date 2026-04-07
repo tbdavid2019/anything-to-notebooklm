@@ -35,6 +35,51 @@ cd /Users/david/Documents/git/tbdavid2019/anything-to-notebooklm
 ./check_env.py
 ```
 
+## OpenClaw Install / OpenClaw 安裝方式
+
+This repo is not an OpenClaw plugin. It should be installed as a local OpenClaw skill directory containing `SKILL.md`.
+
+這個 repo 不是 OpenClaw plugin；正確用法是把它安裝成一個含有 `SKILL.md` 的 OpenClaw 本機 skill 目錄。
+
+Recommended path:
+
+```bash
+~/.openclaw/skills/anything-to-notebooklm
+```
+
+Install by symlink:
+
+```bash
+mkdir -p ~/.openclaw/skills
+ln -s /Users/david/Documents/git/tbdavid2019/anything-to-notebooklm ~/.openclaw/skills/anything-to-notebooklm
+```
+
+Then install the runtime:
+
+```bash
+cd ~/.openclaw/skills/anything-to-notebooklm
+./install.sh
+```
+
+Then verify OpenClaw can see it:
+
+```bash
+openclaw skills list
+openclaw skills check
+```
+
+Notes:
+
+- OpenClaw discovers skills from skill directories containing `SKILL.md`
+- `openclaw plugins install` is not the right command for this repo
+- the runtime still lives inside this repo via `.venv`, `install.sh`, and `check_env.py`
+
+說明：
+
+- OpenClaw 會從含有 `SKILL.md` 的 skill 目錄發現這個 skill
+- `openclaw plugins install` 並不是這個 repo 的正確安裝方式
+- 真正的 runtime 仍然由這個 repo 內的 `.venv`、`install.sh`、`check_env.py` 提供
+
 For command-line use, prepend the local virtualenv to `PATH`:
 
 ```bash

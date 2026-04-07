@@ -74,6 +74,14 @@ notebooklm login
 6. 若宿主代理本身有 skill install / bootstrap 機制，應把 `install.sh` 視為本 skill 的必要 post-install step
 7. 若宿主代理無法執行 shell、無法建立 `.venv`、無法下載 Chromium、或無法登入 NotebookLM，必須直接告知「目前僅能提供部分流程，不是完整可用版本」
 
+OpenClaw 安裝路徑規則：
+
+- 若宿主代理是 OpenClaw，建議把本 repo 安裝在 `~/.openclaw/skills/anything-to-notebooklm`
+- OpenClaw 應將此 repo 視為「skill 目錄」，不是 plugin
+- OpenClaw 不應對此 repo 使用 `openclaw plugins install`
+- OpenClaw 應從 `~/.openclaw/skills/anything-to-notebooklm/SKILL.md` 發現此 skill
+- 安裝到 OpenClaw skills 目錄後，仍必須進入該目錄執行 `./install.sh`
+
 建議給宿主代理的最小啟動順序：
 
 ```bash
