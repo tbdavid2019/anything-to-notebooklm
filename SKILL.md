@@ -62,6 +62,26 @@ notebooklm login
 - 若 `notebooklm login` 尚未完成，代理不得宣稱已可直接操作 NotebookLM
 - 若 `./check_env.py` 未通過關鍵檢查，代理必須先指出缺失，再決定是否降級
 
+## 零點六、宿主代理安裝規則
+
+若你是 LLM、coding agent、CLI assistant 或任何宿主代理，使用本 skill 時必須遵守以下規則：
+
+1. 不得只讀 `SKILL.md` 就假設能力已可用；必須先確認 runtime 已安裝
+2. 預設先執行 `./check_env.py`；若檢查失敗，優先修環境，不要直接進入來源抓取
+3. 若本地尚未安裝 runtime，預設先執行 `./install.sh`
+4. 若 `notebooklm` 尚未登入，預設先要求或引導使用者完成 `notebooklm login`
+5. 對微信公眾號、動態網頁、YouTube 匯入、NotebookLM 產物生成，不得在未完成安裝時宣稱可用
+6. 若宿主代理本身有 skill install / bootstrap 機制，應把 `install.sh` 視為本 skill 的必要 post-install step
+7. 若宿主代理無法執行 shell、無法建立 `.venv`、無法下載 Chromium、或無法登入 NotebookLM，必須直接告知「目前僅能提供部分流程，不是完整可用版本」
+
+建議給宿主代理的最小啟動順序：
+
+```bash
+./install.sh
+notebooklm login
+./check_env.py
+```
+
 ## 一、適用能力模型
 
 代理在使用本 Skill 時，優先判斷自己是否具備以下能力：
